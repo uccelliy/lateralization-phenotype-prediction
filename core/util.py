@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.metrics import cohen_kappa_score, mean_squared_error
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score,accuracy_score, roc_auc_score, f1_score,balanced_accuracy_score
 from imblearn.under_sampling import RandomUnderSampler
+from sklearn.model_selection import  train_test_split
 
 # Define parameters random search + resampling
 n_iter = 100
@@ -13,7 +14,7 @@ random_state = 42
 kfold = GroupKFold(n_splits=cv)
 
 # Save results from randomized search
-def save_results_cv_pipe(model_random, model_name, model_type, scoring,Y_name,X_new):
+def save_results_cv_pipe(model_random, model_name, model_type, scoring,Y_name):
     cv_results = pd.DataFrame(model_random.cv_results_)
     file = f"../results/cv_results_{model_name}_{model_type}_{Y_name}.csv"
     cv_results.to_csv(file, index=False)
@@ -26,7 +27,7 @@ def save_results_cv_pipe(model_random, model_name, model_type, scoring,Y_name,X_
     df_best.to_csv(f"../results/best_tuning_{Y_name}.csv")
     return best
 
-# Function to calculate 95% bootstrap interval
+# Bootstrap confidence intervals to test the stability of the results
 def bootstrap_CI2(X_test_new,y_true, y_pred, function1, function2,function3,model_type ,n_times=10000,threshold=5):
     bs_replicates1 = np.empty(n_times)
     bs_replicates2 = np.empty(n_times)
@@ -70,6 +71,7 @@ def bootstrap_CI2(X_test_new,y_true, y_pred, function1, function2,function3,mode
 
     return result_list
 
+# Permutation test to calculate p-values for the results
 def permutation_Pvalue(X_test_new,y_true, y_pred, score1,score2,score3,score4,function1, function2,function3,model_type ,X_new=None,Y_train=None,model=None,n_times=10000):
     perm_replicates1 = np.empty(n_times)
     perm_replicates2 = np.empty(n_times)
@@ -113,9 +115,7 @@ def permutation_Pvalue(X_test_new,y_true, y_pred, score1,score2,score3,score4,fu
 
     return result_list
 
-def rmse_func(y_true, y_pred):
-    return np.sqrt(mean_squared_error(y_true, y_pred))
-
+# Calculate and save results
 def calc_performance(y_test, y_pred, model_name, Y_name,X_test_new,model_type,X_new=None,Y_train=None,model=None):
     if model_type not in ["regr", "class"]:
         raise ValueError("model_type must be 'regr' or 'class'")
@@ -153,8 +153,6 @@ def calc_performance(y_test, y_pred, model_name, Y_name,X_test_new,model_type,X_
     return perf
 
 # setting up the group split
-from sklearn.model_selection import  train_test_split
-
 class PseudoGroupCV:
     def __init__(self, cv_obj, groups):
         self.cv = cv_obj
@@ -212,12 +210,9 @@ def featimp_file_init(X_train,model_type, name):
     df_shap_featimp_init = pd.DataFrame(columns = X_train.columns.tolist())
     df_shap_featimp_init.to_csv(f"../results/shap_feature_importances_{model_type}_{name}.csv")
     
-    
-    
 def result_file_init_best(behav_name):
     df_best_init = pd.DataFrame(columns = ["n_iter", "cv", "scoring", "best score", "best params"])
     df_best_init.to_csv(f'../results/best_tuning_{behav_name}.csv')
-
 
 def result_file_init_performance(behav_name, model_type):
     if model_type == "regr":
@@ -227,7 +222,8 @@ def result_file_init_performance(behav_name, model_type):
         df_perf_init = pd.DataFrame(columns = ["accuracy", "p1", "cohen_kappa","p2","balance_acc","p3","f1","p4"])
         df_perf_init.to_csv(f'../results/performance_class_{behav_name}.csv')
 
-    
+def rmse_func(y_true, y_pred):
+    return np.sqrt(mean_squared_error(y_true, y_pred))  
 
 #不能在这里分训练集和测试集，应该是分好，传入模型,传入的Y也是一个矩阵，我们要对每一列分别处理，并且把每一列的结果分别保存下来
 
