@@ -28,7 +28,7 @@ def run_xgb(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
                'colsample_bytree': [x/10 for x in range(2, 11)],
                'reg_lambda': [0, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 2, 5],
                'reg_alpha': [0, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 2, 5]}
-    grid_xgb_debug={'n_estimators': list(range(100, 1100, 100)),'max_depth': list(range(2, 15))}
+    grid_xgb_debug={'n_estimators': [100,200],'max_depth': [2,3]}
 
     if(model_type == "regr"):
         model = xgb.XGBRegressor(random_state=random_state)
@@ -56,7 +56,7 @@ def run_xgb(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
     stop = perf_counter()
     print("Time: ", timedelta(seconds = stop-start))
     xgb_best = xgb.best_estimator_
-    util.save_results_cv_pipe(xgb_best, model_name, model_type, scoring,Y_name)
+    util.save_results_cv_pipe(xgb, model_name, model_type, scoring,Y_name)
     joblib.dump(xgb_best, f'xgb_{Y_name}.pkl')
     y_pred_test = xgb_best.predict(X_test_new)
     if model_type == "class":

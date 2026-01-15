@@ -23,7 +23,7 @@ def run_rf(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
               'max_depth': list(range(2, 15)), # Max depth of tree
               'min_samples_split': list(range(2 ,11)), # Minimum number of samples required to split a node
               'min_samples_leaf': list(range(1 ,11))}
-    grid_rf_debug={'n_estimators': list(range(100, 1100, 100)),'max_depth': list(range(2, 15))}
+    grid_rf_debug={'n_estimators': [100,200],'max_depth': [2,3]}
     
     if(model_type == "regr"):
         model = RandomForestRegressor(random_state = random_state)
@@ -45,7 +45,7 @@ def run_rf(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
     stop = perf_counter()
     print("Time: ", timedelta(seconds = stop -start))
     rf_best = rf.best_estimator_
-    util.save_results_cv_pipe(rf_best, model_name, model_type, scoring,Y_name)
+    util.save_results_cv_pipe(rf, model_name, model_type, scoring,Y_name)
     joblib.dump(rf_best, f'rf_{Y_name}.pkl')
     y_pred_test = rf_best.predict(X_test_new)
     if model_type == "class":

@@ -22,7 +22,7 @@ def run_svm( X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
                 'kernel': ["linear", "poly", "rbf", "sigmoid"],
                 'gamma': [0.0001, 0.001, 0.01, 0.1, 1, 10, "scale", "auto"]}
 
-    grid_svm_debug={'C': [0.01, 0.1, 1, 10], 'kernel': ["linear"]}
+    grid_svm_debug={'C': [0.01, 0.1], 'kernel': ["linear"]}
 
     # Set up model
     if(model_type == "regr"):
@@ -46,7 +46,7 @@ def run_svm( X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
     stop = perf_counter()
     print("Time: ", timedelta(seconds = stop -start))
     svm_best = svm.best_estimator_
-    util.save_results_cv_pipe(svm_best, model_name, model_type, scoring, Y_name)
+    util.save_results_cv_pipe(svm, model_name, model_type, scoring, Y_name)
     stop = perf_counter()
     print("Time: ", timedelta(seconds = stop-start))
     joblib.dump(svm_best, f'svm_{Y_name}.pkl')

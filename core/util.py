@@ -28,7 +28,7 @@ def save_results_cv_pipe(model_random, model_name, model_type, scoring,Y_name):
     return best
 
 # Bootstrap confidence intervals to test the stability of the results
-def bootstrap_CI2(X_test_new,y_true, y_pred, function1, function2,function3,model_type ,n_times=10000,threshold=5):
+def bootstrap_CI2(X_test_new,y_true, y_pred, function1, function2,function3,model_type ,n_times=1000,threshold=5):
     bs_replicates1 = np.empty(n_times)
     bs_replicates2 = np.empty(n_times)
     bs_replicates3 = np.empty(n_times)
@@ -72,7 +72,7 @@ def bootstrap_CI2(X_test_new,y_true, y_pred, function1, function2,function3,mode
     return result_list
 
 # Permutation test to calculate p-values for the results
-def permutation_Pvalue(X_test_new,y_true, y_pred, score1,score2,score3,score4,function1, function2,function3,model_type ,X_new=None,Y_train=None,model=None,n_times=10000):
+def permutation_Pvalue(X_test_new,y_true, y_pred, score1,score2,score3,score4,function1, function2,function3,model_type ,X_new=None,Y_train=None,model=None,n_times=1000):
     perm_replicates1 = np.empty(n_times)
     perm_replicates2 = np.empty(n_times)
     perm_replicates3 = np.empty(n_times)
