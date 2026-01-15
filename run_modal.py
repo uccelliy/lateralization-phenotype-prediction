@@ -12,19 +12,17 @@ import core.FeatureSelection as FS
 
 
 # Read in the data
-model_type = "regr" #选择模型类型 class/regr 唯一需要修改的地方
-os.chdir(os.path.dirname(__file__))  
 input_file = 'C:/Users/77260/Desktop/111/dti_5e6.txt'
+input_file4 = 'C:/Users/77260/Desktop/111/class_test.txt'
 X = pd.read_csv(input_file, sep="\t", decimal='.', encoding='cp1252')
 print(X.shape)
-input_file4 = 'C:/Users/77260/Desktop/111/class_test.txt'
 Y_all = pd.read_csv(input_file4, sep="\t", decimal='.', encoding='cp1252')
 print(Y_all.shape)
 behaviors = Y_all.columns[2:]  # 跳过前两列（假设前两列非目标变量），保证前两是被试编号和家庭编号，如果有bug确保没多删或者少删
 subjects_num_X = X.shape[0]-1
 subjects_num_Y = Y_all.shape[0]-1
 summary_df = pd.read_csv("behavior_summary.csv", index_col=0) if os.path.exists("behavior_summary.csv") else pd.DataFrame()
-
+model_type = "regr" #选择模型类型 class/regr 唯一需要修改的地方
 for behav_name in behaviors:
 
     print("Running model for behavior: ", behav_name)

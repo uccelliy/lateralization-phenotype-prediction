@@ -69,5 +69,4 @@ def run_stack(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
         performance = util.calc_performance(Y_test, y_pred_test, model_name,Y_name,X_test_new,model_type,X_new=X_new,Y_train=Y_train.values.ravel(),model=stack_pipeline)
     else:
         performance = util.calc_performance(Y_test, y_pred_test, model_name,Y_name,X_test_new,model_type)
-    print(performance)
 

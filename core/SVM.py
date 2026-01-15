@@ -57,7 +57,11 @@ def run_svm( X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
         performance = util.calc_performance(Y_test, y_pred_test, model_name, Y_name,X_test_new,model_type)
     print(performance)
 
+
+
     ### Calculate feature_importances
-    FI.calc_permutation_feature_importance(svm_best,X_test_new,Y_test,model_name,model_type,Y_name)
-    shap_value=FI.calc_shap_feature_importances(svm_best,X_test_new,X_new,Y_name,model_type,model_name)
-    DrawPic.draw_pic(shap_value,X_test_new,Y_name)
+    if performance[0]<=0.05:
+        FI.calc_permutation_feature_importance(svm_best,X_test_new,Y_test,model_name,model_type,Y_name)
+        shap_value=FI.calc_shap_feature_importances(svm_best,X_test_new,X_new,Y_name,model_type,model_name)
+        DrawPic.draw_pic(shap_value,X_test_new,Y_name)
+        
