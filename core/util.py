@@ -1,29 +1,22 @@
-# Import packages
-# ! Note: not all packages used !
 import pandas as pd
 from sklearn import clone
-
 from sklearn.model_selection import GroupKFold,KFold
 import numpy as np
 from sklearn.metrics import cohen_kappa_score, mean_squared_error
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score,accuracy_score, roc_auc_score, f1_score,balanced_accuracy_score
 from imblearn.under_sampling import RandomUnderSampler
+
 # Define parameters random search + resampling
 n_iter = 100
 cv = 10
 random_state = 42
 kfold = GroupKFold(n_splits=cv)
-# This whole script is regression
-
 
 # Save results from randomized search
 def save_results_cv_pipe(model_random, model_name, model_type, scoring,Y_name,X_new):
-    # Save all results
     cv_results = pd.DataFrame(model_random.cv_results_)
     file = f"../results/cv_results_{model_name}_{model_type}_{Y_name}.csv"
     cv_results.to_csv(file, index=False)
-
-    # Save best
     best_score = model_random.best_score_
     best_params = model_random.best_params_
     best = pd.DataFrame({"n_iter": [n_iter], "cv": [cv], "scoring": [scoring], "best score": [best_score],
@@ -31,7 +24,6 @@ def save_results_cv_pipe(model_random, model_name, model_type, scoring,Y_name,X_
     df_best = pd.read_csv(f"../results/best_tuning_{Y_name}.csv", index_col=0)
     df_best = pd.concat([df_best, best])
     df_best.to_csv(f"../results/best_tuning_{Y_name}.csv")
-  
     return best
 
 # Function to calculate 95% bootstrap interval
@@ -40,8 +32,6 @@ def bootstrap_CI2(X_test_new,y_true, y_pred, function1, function2,function3,mode
     bs_replicates2 = np.empty(n_times)
     bs_replicates3 = np.empty(n_times)
     bs_replicates4 = np.empty(n_times)
-    
-    # Create bootstrap replicates as much as size
     for i in range(n_times):
         idx_bs = np.random.choice(np.arange(len(y_pred)), size=len(y_pred))
         y_true_bs = y_true.to_numpy()[idx_bs].ravel()
@@ -68,72 +58,57 @@ def bootstrap_CI2(X_test_new,y_true, y_pred, function1, function2,function3,mode
             bs_replicates2[i] = function2(y_true_bs, y_pred_bs)
             bs_replicates3[i] = balanced_accuracy_score(y_true_bs, y_pred_bs)
             bs_replicates4[i] = function3(y_true_bs, y_pred_bs)
-
-    # Get 95% confidence interval
     ci_lower1 = np.percentile(bs_replicates1, threshold)
     ci_upper1 = np.percentile(bs_replicates1, (100 - threshold))
-
     ci_lower2 = np.percentile(bs_replicates2, threshold)
     ci_upper2 = np.percentile(bs_replicates2, (100 - threshold))
-
     ci_lower3 = np.percentile(bs_replicates3, threshold)
     ci_upper3 = np.percentile(bs_replicates3, (100 - threshold))
-    
     ci_lower4 = np.percentile(bs_replicates4, threshold)
     ci_upper4 = np.percentile(bs_replicates4, (100 - threshold))
-    
     result_list = [ci_lower1, ci_upper1, ci_lower2, ci_upper2, ci_lower3, ci_upper3,ci_lower4, ci_upper4]
 
     return result_list
 
 def permutation_Pvalue(X_test_new,y_true, y_pred, score1,score2,score3,score4,function1, function2,function3,model_type ,X_new=None,Y_train=None,model=None,n_times=10000):
-    bs_replicates1 = np.empty(n_times)
-    bs_replicates2 = np.empty(n_times)
-    bs_replicates3 = np.empty(n_times)
-    bs_replicates4 = np.empty(n_times)
+    perm_replicates1 = np.empty(n_times)
+    perm_replicates2 = np.empty(n_times)
+    perm_replicates3 = np.empty(n_times)
+    perm_replicates4 = np.empty(n_times)
     
-    # Create bootstrap replicates as much as size
     for i in range(n_times):
-        
         if model_type=="regr":
             idx_bs = np.random.permutation(np.arange(len(y_pred)))
-            y_true_bs = y_true.to_numpy()[idx_bs].ravel()
-            y_pred_bs = y_pred.ravel()
+            y_true_perm = y_true.to_numpy()[idx_bs].ravel()
+            y_pred_perm = y_pred.ravel()
             if function1 == mean_squared_error:
-                bs_replicates1[i] = function1(y_true_bs, y_pred_bs)
+                perm_replicates1[i] = function1(y_true_perm, y_pred_perm)
             else:
-                bs_replicates1[i] = function1(y_true_bs, y_pred_bs)
-                bs_replicates3[i] = 1 - ((1 - bs_replicates1[i]) * (X_test_new.shape[0] - 1)) / (X_test_new.shape[0] - X_test_new.shape[1] - 1)
+                perm_replicates1[i] = function1(y_true_perm, y_pred_perm)
+                perm_replicates3[i] = 1 - ((1 - perm_replicates1[i]) * (X_test_new.shape[0] - 1)) / (X_test_new.shape[0] - X_test_new.shape[1] - 1)
 
             if function2 == mean_squared_error:
-                bs_replicates2[i] = function2(y_true_bs, y_pred_bs)
+                perm_replicates2[i] = function2(y_true_perm, y_pred_perm)
             else:
-                bs_replicates2[i] = function2(y_true_bs, y_pred_bs)
+                perm_replicates2[i] = function2(y_true_perm, y_pred_perm)
 
             if function2 == mean_squared_error:
-                bs_replicates4[i] = function3(y_true_bs, y_pred_bs)
+                perm_replicates4[i] = function3(y_true_perm, y_pred_perm)
             else:
-                bs_replicates4[i] = function3(y_true_bs, y_pred_bs)[0,1]
+                perm_replicates4[i] = function3(y_true_perm, y_pred_perm)[0,1]
         elif model_type == "class":
             idx_bs = np.random.permutation(np.arange(len(y_pred)))
-            y_true_bs = y_true.to_numpy()[idx_bs].ravel()
-            y_pred_bs = y_pred.ravel()
-            # model_perm = clone(model)
-            # y_perm = np.random.permutation(Y_train)
-            # y_pred_bs = model_perm.fit(X_new, y_perm).predict(X_test_new)
-            # y_true_bs = y_true.to_numpy().ravel()
-            bs_replicates1[i] = function1(y_true_bs, y_pred_bs)
-            bs_replicates2[i] = function2(y_true_bs, y_pred_bs)
-            bs_replicates3[i] = balanced_accuracy_score(y_true_bs, y_pred_bs)
-            bs_replicates4[i] = function3(y_true_bs, y_pred_bs, average='weighted')
+            y_true_perm = y_true.to_numpy()[idx_bs].ravel()
+            y_pred_perm = y_pred.ravel()
+            perm_replicates1[i] = function1(y_true_perm, y_pred_perm)
+            perm_replicates2[i] = function2(y_true_perm, y_pred_perm)
+            perm_replicates3[i] = balanced_accuracy_score(y_true_perm, y_pred_perm)
+            perm_replicates4[i] = function3(y_true_perm, y_pred_perm, average='weighted')
 
-    p1 = np.mean(bs_replicates1 >= score1)
-    p2 = np.mean(bs_replicates2 >= score2)
-    p3 = np.mean(bs_replicates3 >= score3)
-    p4 = np.mean(bs_replicates4 >= score4)
-    # Get 95% confidence interval
-    
-    
+    p1 = np.mean(perm_replicates1 >= score1)
+    p2 = np.mean(perm_replicates2 >= score2)
+    p3 = np.mean(perm_replicates3 >= score3)
+    p4 = np.mean(perm_replicates4 >= score4)
     result_list = [p1,p2,p3,p4]
 
     return result_list
@@ -141,7 +116,6 @@ def permutation_Pvalue(X_test_new,y_true, y_pred, score1,score2,score3,score4,fu
 def rmse_func(y_true, y_pred):
     return np.sqrt(mean_squared_error(y_true, y_pred))
 
-# Define function to calculate performance measures regression
 def calc_performance(y_test, y_pred, model_name, Y_name,X_test_new,model_type,X_new=None,Y_train=None,model=None):
     if model_type not in ["regr", "class"]:
         raise ValueError("model_type must be 'regr' or 'class'")
@@ -161,13 +135,11 @@ def calc_performance(y_test, y_pred, model_name, Y_name,X_test_new,model_type,X_
         result_list_tmp = permutation_Pvalue(X_test_new,y_test, y_pred, accuracy,cohen_kappa,balanced_accuracy,
                                           f1,accuracy_score, cohen_kappa_score,f1_score,"class",X_new=X_new,Y_train=Y_train,model=model)
         performance = [accuracy, result_list_tmp[0] ,cohen_kappa, result_list_tmp[1], balanced_accuracy, result_list_tmp[2],f1, result_list_tmp[3]]
-    # save performance
     df_perf = pd.read_csv(f"../results/performance_{model_type}_{Y_name}.csv", index_col=0)
     perf = pd.DataFrame([performance], columns=df_perf.columns.tolist(), index=[f"{model_name}_{model_type}"])
     df_perf = pd.concat([df_perf, perf])
     df_perf.to_csv(f"../results/performance_{model_type}_{Y_name}.csv")
 
-    # save predictions
     if model_name.endswith("_child") or model_name.endswith("_child_noprs"):
         file_extension = "_child"
     else:
@@ -179,8 +151,6 @@ def calc_performance(y_test, y_pred, model_name, Y_name,X_test_new,model_type,X_
     df_pred.to_csv(f"../results/predictions_{model_type}{file_extension}_{Y_name}.csv")
 
     return perf
-
-
 
 # setting up the group split
 from sklearn.model_selection import  train_test_split
@@ -195,11 +165,9 @@ class PseudoGroupCV:
         return self.cv.get_n_splits(X,y, groups)
     
 def prepare_data(data1,data2,name,model_type="regr"):
-     # Define random_state
     data1 = data1.reset_index(drop=True)
     data2 = data2.reset_index(drop=True)
 
-    # Step 2: Check IID 不重复（如果你的代码逻辑假设 IID 唯一）
     assert not data1['IID'].duplicated().any(), "Duplicate IID in data1"
     assert not data2['IID'].duplicated().any(), "Duplicate IID in data2"
     common_ids = pd.Series(np.intersect1d(data1['IID'], data2['IID']))
@@ -210,11 +178,9 @@ def prepare_data(data1,data2,name,model_type="regr"):
     X_train, X_test, Y_train, Y_test = train_test_split(data1_a, data2_a, test_size=0.2, random_state=42)
     groups = X_train['FID'].reset_index(drop=True)
 
-    # 保留你要预测的标签列（假设行为名称为 behav_name）
     Y_train = Y_train[[name]].reset_index(drop=True)
     Y_test = Y_test[[name]].reset_index(drop=True)
 
-    # 去掉前两列（IID, FID），只保留特征
     X_train = X_train.iloc[:, 2:].reset_index(drop=True)
     X_test = X_test.iloc[:, 2:].reset_index(drop=True)
 
@@ -233,9 +199,6 @@ def prepare_data(data1,data2,name,model_type="regr"):
     ##  support_regr.csv
     df_support_init = pd.DataFrame(columns = X_train.columns.tolist())
     df_support_init.to_csv(f"../results/support_{model_type}_{name}.csv")
-    
-    # initialize permutation feature importances with selected features
-
     
     return X_train, X_test, Y_train, Y_test,groups
 
