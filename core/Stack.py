@@ -30,7 +30,7 @@ def run_stack(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
                 'colsample_bytree': [x/10 for x in range(2, 11)],
                 'reg_lambda': [0, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 2, 5],
                 'reg_alpha': [0, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 2, 5]}
-    grid_pipe_debug={'learning_rate': [ 0.05, 0.075, 0.1], 'max_depth': list(range(2, 16))}
+    grid_pipe_debug={'learning_rate': [ 0.05, 0.075, 0.1], 'max_depth': [2,4,6]}
     
     if (model_type == "regr"):
         scoring = 'neg_mean_squared_error'
