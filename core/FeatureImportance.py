@@ -6,23 +6,15 @@ import numpy as np
 def calc_tree_gini_feature_importance(estimator,model_name,model_type,Y_name):
 
     if model_name.startswith("RF") or model_name.startswith("XGB"):
-        if model_name.endswith("_noprs"):
-            if model_name.endswith("_child_noprs"):
-                file_extension = "_child_noprs"
-            else:
-                file_extension = "_noprs"
-        elif model_name.endswith("_child"):
-            file_extension = "_child"
-        else:
-            file_extension = ""
+
         gini_imp = estimator.feature_importances_
         gini_imp_scaled = (gini_imp - np.min(gini_imp)) / (np.max(gini_imp) - np.min(gini_imp))
-        df_featimp = pd.read_csv(f"../results/tree_feature_importances_{model_type}{file_extension}_{Y_name}.csv", index_col=0)
+        df_featimp = pd.read_csv(f"../results/tree_feature_importances_{model_type}_{Y_name}.csv", index_col=0)
         feature_importances = pd.DataFrame([gini_imp, gini_imp_scaled], columns=df_featimp.columns.to_list(),
                                            index=[f"{model_name}_{model_type}_gini",
                                                   f"{model_name}_{model_type}_gini_scaled"])
         df_featimp = pd.concat([df_featimp, feature_importances])
-        df_featimp.to_csv(f"../results/tree_feature_importances_{model_type}{file_extension}_{Y_name}.csv")
+        df_featimp.to_csv(f"../results/tree_feature_importances_{model_type}_{Y_name}.csv")
         return df_featimp
     else:
         return None
@@ -40,22 +32,11 @@ def calc_permutation_feature_importance(estimator, X, y, model_name, model_type,
     feature_imp_scaled = (feature_imp - np.min(feature_imp)) / (np.max(feature_imp) - np.min(feature_imp))
 
     # Save feature importances
-    if model_name.endswith("_noprs"):
-        if model_name.endswith("_child_noprs"):
-            file_extension = "_child_noprs"
-        else:
-            file_extension = "_noprs"
-    elif model_name.endswith("_child"):
-        file_extension = "_child"
-    else:
-        file_extension = ""
-
-    df_perm_featimp = pd.read_csv(f"../results/perm_feature_importances_{model_type}{file_extension}_{Y_name}.csv", index_col=0)
+    df_perm_featimp = pd.read_csv(f"../results/perm_feature_importances_{model_type}_{Y_name}.csv", index_col=0)
     feature_importances = pd.DataFrame([feature_imp, feature_imp_scaled], columns=df_perm_featimp.columns.tolist(),
                                        index=[f"{model_name}_{model_type}", f"{model_name}_{model_type}_scaled"])
     df_perm_featimp = pd.concat([df_perm_featimp, feature_importances])
-    df_perm_featimp.to_csv(f"../results/perm_feature_importances_{model_type}{file_extension}_{Y_name}.csv")
-
+    df_perm_featimp.to_csv(f"../results/perm_feature_importances_{model_type}_{Y_name}.csv")
     return feature_importances
 
 

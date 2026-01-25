@@ -17,7 +17,7 @@ def run_models_for_behavior(behav_name, X, Y_all,model_type,transform_method="No
         X_test_new = X_test 
     else:
         X_test_new = transform.transform(X_test)
-    # 初始化结果文件
+        
     util.result_file_init_best(behav_name)
     util.result_file_init_performance(behav_name, model_type)
     
