@@ -39,21 +39,11 @@ def bootstrap_CI2(X_test_new,y_true, y_pred, function1, function2,function3,mode
         y_pred_bs = y_pred[idx_bs].ravel()
         
         if model_type=="regr":
-            if function1 == mean_squared_error:
-                bs_replicates1[i] = function1(y_true_bs, y_pred_bs)
-            else:
-                bs_replicates1[i] = function1(y_true_bs, y_pred_bs)
-                bs_replicates3[i] = 1 - ((1 - bs_replicates1[i]) * (X_test_new.shape[0] - 1)) / (X_test_new.shape[0] - X_test_new.shape[1] - 1)
+            bs_replicates1[i] = function1(y_true_bs, y_pred_bs)
+            bs_replicates3[i] = 1 - ((1 - bs_replicates1[i]) * (X_test_new.shape[0] - 1)) / (X_test_new.shape[0] - X_test_new.shape[1] - 1)
+            bs_replicates2[i] = function2(y_true_bs, y_pred_bs)
+            bs_replicates4[i] = function3(y_true_bs, y_pred_bs)
 
-            if function2 == mean_squared_error:
-                bs_replicates2[i] = function2(y_true_bs, y_pred_bs)
-            else:
-                bs_replicates2[i] = function2(y_true_bs, y_pred_bs)
-
-            if function2 == mean_squared_error:
-                bs_replicates4[i] = function3(y_true_bs, y_pred_bs)
-            else:
-                bs_replicates4[i] = function3(y_true_bs, y_pred_bs)[0,1]
         elif model_type == "class":
             bs_replicates1[i] = function1(y_true_bs, y_pred_bs)
             bs_replicates2[i] = function2(y_true_bs, y_pred_bs)
@@ -79,29 +69,16 @@ def permutation_Pvalue(X_test_new,y_true, y_pred, score1,score2,score3,score4,fu
     perm_replicates4 = np.empty(n_times)
     
     for i in range(n_times):
+        idx_bs = np.random.permutation(np.arange(len(y_pred)))
+        y_true_perm = y_true.to_numpy()[idx_bs].ravel()
+        y_pred_perm = y_pred.ravel()
         if model_type=="regr":
-            idx_bs = np.random.permutation(np.arange(len(y_pred)))
-            y_true_perm = y_true.to_numpy()[idx_bs].ravel()
-            y_pred_perm = y_pred.ravel()
-            if function1 == mean_squared_error:
-                perm_replicates1[i] = function1(y_true_perm, y_pred_perm)
-            else:
-                perm_replicates1[i] = function1(y_true_perm, y_pred_perm)
-                perm_replicates3[i] = 1 - ((1 - perm_replicates1[i]) * (X_test_new.shape[0] - 1)) / (X_test_new.shape[0] - X_test_new.shape[1] - 1)
-
-            if function2 == mean_squared_error:
-                perm_replicates2[i] = function2(y_true_perm, y_pred_perm)
-            else:
-                perm_replicates2[i] = function2(y_true_perm, y_pred_perm)
-
-            if function2 == mean_squared_error:
-                perm_replicates4[i] = function3(y_true_perm, y_pred_perm)
-            else:
-                perm_replicates4[i] = function3(y_true_perm, y_pred_perm)[0,1]
+            perm_replicates1[i] = function1(y_true_perm, y_pred_perm)
+            perm_replicates3[i] = 1 - ((1 - perm_replicates1[i]) * (X_test_new.shape[0] - 1)) / (X_test_new.shape[0] - X_test_new.shape[1] - 1)
+            perm_replicates2[i] = function2(y_true_perm, y_pred_perm)
+            perm_replicates4[i] = function3(y_true_perm, y_pred_perm)
+            
         elif model_type == "class":
-            idx_bs = np.random.permutation(np.arange(len(y_pred)))
-            y_true_perm = y_true.to_numpy()[idx_bs].ravel()
-            y_pred_perm = y_pred.ravel()
             perm_replicates1[i] = function1(y_true_perm, y_pred_perm)
             perm_replicates2[i] = function2(y_true_perm, y_pred_perm)
             perm_replicates3[i] = balanced_accuracy_score(y_true_perm, y_pred_perm)
