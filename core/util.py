@@ -96,6 +96,7 @@ def permutation_Pvalue(X_test_new,y_true, y_pred, score1,score2,score3,score4,fu
 def calc_performance(y_test, y_pred, model_name, Y_name,X_test_new,model_type,X_new=None,Y_train=None,model=None):
     if model_type not in ["regr", "class"]:
         raise ValueError("model_type must be 'regr' or 'class'")
+    
     elif model_type == "regr":
         r2 = r2_score(y_test, y_pred)
         adjusted_r2 = 1 - ((1 - r2) * (X_test_new.shape[0] - 1)) / (X_test_new.shape[0] - X_test_new.shape[1] - 1)
@@ -104,6 +105,7 @@ def calc_performance(y_test, y_pred, model_name, Y_name,X_test_new,model_type,X_
         corr =  np.corrcoef(np.ravel(y_test), np.ravel(y_pred))[0, 1]
         result_list_tmp = permutation_Pvalue(X_test_new,y_test, y_pred, r2,rmse,adjusted_r2,corr,r2_score, rmse_func,np.corrcoef,"regr")
         performance = [r2, result_list_tmp[0], mae, rmse,result_list_tmp[1], adjusted_r2, result_list_tmp[2],corr, result_list_tmp[3]]
+        
     elif model_type == "class":
         accuracy = accuracy_score(y_test, y_pred)
         cohen_kappa = cohen_kappa_score(y_test, y_pred)
@@ -112,20 +114,11 @@ def calc_performance(y_test, y_pred, model_name, Y_name,X_test_new,model_type,X_
         result_list_tmp = permutation_Pvalue(X_test_new,y_test, y_pred, accuracy,cohen_kappa,balanced_accuracy,
                                           f1,accuracy_score, cohen_kappa_score,f1_score,"class",X_new=X_new,Y_train=Y_train,model=model)
         performance = [accuracy, result_list_tmp[0] ,cohen_kappa, result_list_tmp[1], balanced_accuracy, result_list_tmp[2],f1, result_list_tmp[3]]
+        
     df_perf = pd.read_csv(f"../results/performance_{model_type}_{Y_name}.csv", index_col=0)
     perf = pd.DataFrame([performance], columns=df_perf.columns.tolist(), index=[f"{model_name}_{model_type}"])
     df_perf = pd.concat([df_perf, perf])
     df_perf.to_csv(f"../results/performance_{model_type}_{Y_name}.csv")
-
-    if model_name.endswith("_child") or model_name.endswith("_child_noprs"):
-        file_extension = "_child"
-    else:
-        file_extension = ""
-
-    df_pred = pd.read_csv(f"../results/predictions_{model_type}{file_extension}_{Y_name}.csv", index_col=0)
-    pred = pd.DataFrame(y_pred, columns=[f"{model_name}_{model_type}"], index=df_pred.index.tolist())
-    df_pred = pd.concat([df_pred, pred], axis=1)
-    df_pred.to_csv(f"../results/predictions_{model_type}{file_extension}_{Y_name}.csv")
 
     return perf
 
@@ -165,16 +158,7 @@ def prepare_data(data1,data2,name,model_type="regr"):
     #     X_train, Y_train_resampled = rus.fit_resample(X_train, Y_train[name])  # 注意只传一列
     #     Y_train = pd.DataFrame({name: Y_train_resampled})  # 转回DataFrame
     #     groups = groups.loc[rus.sample_indices_].reset_index(drop=True)  # 同步更新 groups
-    
-    # predictions_regr.csv
-    df_pred_init = pd.DataFrame(Y_test.values, index = X_test.index.tolist(), columns = ["y_test"])
-    df_pred_init.to_csv(f"../results/predictions_{model_type}_{name}.csv")
-    
-    ## ### Initialize dataframes
-    ##  support_regr.csv
-    df_support_init = pd.DataFrame(columns = X_train.columns.tolist())
-    df_support_init.to_csv(f"../results/support_{model_type}_{name}.csv")
-    
+
     return X_train, X_test, Y_train, Y_test,groups
 
 def featimp_file_init(X_train,model_type, name):

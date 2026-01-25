@@ -18,16 +18,9 @@ def run_models_for_behavior(behav_name, X, Y_all,model_type,transform_method="No
     else:
         X_test_new = transform.transform(X_test)
     # 初始化结果文件
-    df_best_init = pd.DataFrame(columns = ["n_iter", "cv", "scoring", "best score", "best params"])
-    df_best_init.to_csv(f'../results/best_tuning_{behav_name}.csv')
-
-    if model_type == "regr":
-        df_perf_init = pd.DataFrame(columns = ["r2", "p1", "mae", "rmse", "p2", "adj_r2", "p3","r", "p4"])
-        df_perf_init.to_csv(f'../results/performance_regr_{behav_name}.csv')
-    elif model_type == "class":
-        df_perf_init = pd.DataFrame(columns = ["accuracy", "p1", "roc_auc","p2","balance_acc","p3","f1","p4"])
-        df_perf_init.to_csv(f'../results/performance_class_{behav_name}.csv')
-
+    util.result_file_init_best(behav_name)
+    util.result_file_init_performance(behav_name, model_type)
+    
     Parallel(n_jobs=3)(
         delayed(model_func)(X_train_new, X_test_new, Y_train, Y_test, behav_name, groups,model_type)
         for model_func in [RF.run_rf, SVM.run_svm, XGB.run_xgb]
