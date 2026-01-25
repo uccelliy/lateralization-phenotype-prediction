@@ -15,7 +15,7 @@ import joblib
 from sklearn.preprocessing import LabelEncoder as LE
 import core.FeatureImportance as FI
 import core.DrawPic as DrawPic
-def run_xgb(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
+def run_xgb(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type,debug_mode):
     print("Running XGBoost regression")
     sample_weight = compute_sample_weight(class_weight='balanced', y=Y_train)
     model_name = "XGB"
@@ -41,6 +41,9 @@ def run_xgb(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
         Y_test = pd.Series(le.transform(Y_test), index=Y_test.index, name="target")
     else:
         raise ValueError("model_type must be 'regr' or 'class'")
+    
+    if debug_mode:
+        grid_xgb = grid_xgb_debug
 
     xgb = RandomizedSearchCV(estimator = model, param_distributions = grid_xgb, 
                                   scoring = scoring, n_iter = n_iter, 

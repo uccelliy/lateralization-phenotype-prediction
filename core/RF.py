@@ -15,7 +15,7 @@ import core.FeatureImportance as FI
 import core.DrawPic as DrawPic
 
 ### Random forest regression
-def run_rf(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
+def run_rf(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type,debug_mode):
     print("Running RF regression")
     model_name = "RF"
     grid_rf = {'n_estimators': list(range(100, 1100, 100)), # Nr of trees
@@ -34,6 +34,9 @@ def run_rf(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
         grid_rf.setdefault("class_weight", [None, 'balanced'])
     else:
         raise ValueError("model_type must be 'regr' or 'class'")
+    
+    if debug_mode:
+        grid_rf = grid_rf_debug
     
     rf = RandomizedSearchCV(estimator = model, param_distributions = grid_rf, scoring = scoring, 
                                            n_iter = n_iter, cv = util.PseudoGroupCV(kfold,groups), verbose = 0, 

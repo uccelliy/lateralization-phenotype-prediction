@@ -15,7 +15,7 @@ import core.FeatureImportance as FI
 import core.DrawPic as DrawPic
 ## Support vector machines
 
-def run_svm( X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
+def run_svm( X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type,debug_mode):
     print("Running SVM regression")
     model_name = "SVM"
     grid_svm = {'C': [0.01, 0.1, 1, 10],
@@ -35,6 +35,9 @@ def run_svm( X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
         scoring = 'balanced_accuracy'  
     else:
         raise ValueError("model_type must be 'regr' or 'class'")
+    
+    if debug_mode:
+        grid_svm = grid_svm_debug
     
     svm = RandomizedSearchCV(estimator = model, param_distributions = grid_svm, scoring = scoring, 
                                   n_iter = n_iter, cv = util.PseudoGroupCV(kfold,groups), verbose = 0, 

@@ -31,6 +31,7 @@ def run_models_for_behavior(behav_name, X, Y_all,model_type,transform_method="No
 
 def main():
     # Read in the data 可以修改路径来读目标文件
+    debug_mode = True
     model_type = "regr"
     os.chdir(os.path.dirname(__file__))
     input_file_X = 'C:/Users/77260/Desktop/111/dti_5e6.txt'
@@ -44,7 +45,7 @@ def main():
     
     # 并行运行所有 behaviors
     Parallel(n_jobs=os.cpu_count() - 1)(
-        [delayed(run_models_for_behavior)(behav_name, X, Y_all[["IID","FID",behav_name]], model_type) for behav_name in behaviors]
+        [delayed(run_models_for_behavior)(behav_name, X, Y_all[["IID","FID",behav_name]], model_type, debug_mode) for behav_name in behaviors]
     )
 
 if __name__ == "__main__":

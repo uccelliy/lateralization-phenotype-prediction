@@ -11,7 +11,7 @@ from datetime import timedelta
 import joblib
 from sklearn.preprocessing import LabelEncoder as LE
 ## Stacked model
-def run_stack(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
+def run_stack(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type,debug_mode):
     print("Running Stacked model")
     sample_weight = compute_sample_weight(class_weight='balanced', y=Y_train)
 # Set up model
@@ -41,6 +41,10 @@ def run_stack(X_new, X_test_new, Y_train, Y_test,Y_name,groups,model_type):
         le = LE()
         Y_train = pd.Series(le.fit_transform(Y_train), index=Y_train.index, name="target")
         Y_test = pd.Series(le.transform(Y_test), index=Y_test.index, name="target")
+
+
+    if debug_mode:
+        grid_stack = grid_pipe_debug
         
     grid_search_meta = RandomizedSearchCV(estimator = f_clf,
                                 param_distributions  = grid_stack,
